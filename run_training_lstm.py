@@ -12,7 +12,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
 ###### **model parameters**
-W = 30  # window size
+W = 50  # window size
 TS = 64  # number of voters per test subject
 
 ###### **training parameters**
@@ -29,10 +29,10 @@ optimizer = optim.Adam(net.parameters(), lr=LR, weight_decay=0.001)
 # state_dict = torch.load('checkpoint.pth')
 # net.load_state_dict(state_dict)
 
-train_data = np.load('data/train_data_1.npy')
-train_label = np.load('data/train_label_1.npy')
-test_data = np.load('data/test_data_1.npy')
-test_label = np.load('data/test_label_1.npy')
+train_data = np.load('data/train_data_1200_1.npy')
+train_label = np.load('data/train_label_1200_1.npy')
+test_data = np.load('data/test_data_1200_1.npy')
+test_label = np.load('data/test_label_1200_1.npy')
 
 print(train_data.shape)
 

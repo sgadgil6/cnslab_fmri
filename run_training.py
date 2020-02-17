@@ -75,6 +75,13 @@ for epoch in range(100001): # number of mini-batches
         train_acc = sum(outputs[:,0]==train_label_batch) / train_label_batch.shape[0]
         print('[%d] training loss: %.3f training batch acc %f' %(epoch + 1, training_loss/1000, train_acc))
         training_loss = 0.0
+        layer_num = 1
+        for edge_importances in net.edge_importance:
+            edge_imp = torch.squeeze(edge_importances.data).cpu().numpy()
+            filename = "output/edge_importance/edge_imp_layer_"+str(layer_num) + "_epoch_" + str(epoch)
+            np.save(filename, edge_imp)
+            layer_num += 1
+        #print(torch.squeeze(net.edge_importance[0].data).cpu().numpy().shape)
 
     # validate on test subjects by voting
     if epoch % 1000 == 0:    # print every K mini-batches

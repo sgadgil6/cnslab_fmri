@@ -39,7 +39,7 @@ class Model(nn.Module):
         #A = np.load('../cs230/adj/adj_matrix.npy')
 
         # **this is the adj matrix that computes correlation based on z-score of data for all 1200 timesteps**
-        A = np.load('data/adj_matrix_1200.npy')
+        A = np.load('data/adj_matrix_qingyu.npy')
 
         Dl = np.sum(A, 0)
         num_node = A.shape[0]
