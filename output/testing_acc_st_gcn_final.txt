@@ -1,0 +1,1 @@
+Window size 16 completed. Final testing accuracy = 0.7688453895911724
