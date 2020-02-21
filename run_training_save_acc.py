@@ -36,7 +36,7 @@ print(train_data.shape)
 ###### start training model
 training_loss = 0.0
 
-for window_size in [16, 32, 50, 64, 75, 100, 128, 256, 512, 1200]:
+for window_size in [50, 64, 75, 100, 128, 256, 1200]:
     W = window_size
     final_testing_accuracy = 0
     testing_acc_curr_fold = []
@@ -58,10 +58,8 @@ for window_size in [16, 32, 50, 64, 75, 100, 128, 256, 512, 1200]:
         
         optimizer = optim.Adam(net.parameters(), lr=LR, weight_decay=0.001)
 
-        for epoch in range(30001):  # number of mini-batches
+        for epoch in range(60001):  # number of mini-batches
             # select a random sub-set of subjects
-            #net.hidden = net.init_hidden(batch_size)
-            net.train()
             idx_batch = np.random.permutation(int(train_data.shape[0]))
             idx_batch = idx_batch[:int(batch_size)]
 
@@ -95,7 +93,6 @@ for window_size in [16, 32, 50, 64, 75, 100, 128, 256, 512, 1200]:
 
             # validate on test subjects by voting
             if epoch % 1000 == 0:  # print every K mini-batches
-                net.eval()
                 idx_batch = np.random.permutation(int(test_data.shape[0]))
                 idx_batch = idx_batch[:int(batch_size)]
 
@@ -116,11 +113,8 @@ for window_size in [16, 32, 50, 64, 75, 100, 128, 256, 512, 1200]:
                             test_data_batch[i] = test_data[idx_batch[i], :, r1:r1 + W, :, :]
 
                         test_data_batch_dev = torch.from_numpy(test_data_batch).float().to(device)
-                        #test_data_batch_dev = test_data_batch_dev.squeeze()
-                        #net.eval()
                         outputs = net(test_data_batch_dev)
                         outputs = outputs.data.cpu().numpy()
-                        #net.train()
 
                         prediction[idx_batch] = prediction[idx_batch] + outputs[:, 0];
                         voter[idx_batch] = voter[idx_batch] + 1;
@@ -137,10 +131,11 @@ for window_size in [16, 32, 50, 64, 75, 100, 128, 256, 512, 1200]:
                     best_test_acc_curr_fold = test_acc
                 torch.save(net.state_dict(), 'checkpoint.pth')
                 net.train()
+        print("Best accuracy for window {} and fold {} = {}".format(W, fold, best_test_acc_curr_fold))
         testing_acc_curr_fold.append(best_test_acc_curr_fold)
     print("Window size {} completed. Final testing accuracy = {}".format(W, np.mean(np.array(testing_acc_curr_fold))))
     with open('output/testing_acc_st_gcn_final.txt', 'a') as f:
-        f.write("Window size {} completed. Final testing accuracy = {}".format(W, np.mean(np.array(testing_acc_curr_fold))))
+        f.write("Window size {} completed. Final testing accuracy = {}\n".format(W, np.mean(np.array(testing_acc_curr_fold))))
 
 
 

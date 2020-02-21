@@ -12,7 +12,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
 ###### **model parameters**
-W = 50  # window size
+W = 100  # window size
 TS = 64  # number of voters per test subject
 
 ###### **training parameters**
