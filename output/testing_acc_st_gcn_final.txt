@@ -5,3 +5,4 @@ Window size 64 completed. Final testing accuracy = 0.8268591721980298
 Window size 75 completed. Final testing accuracy = 0.825954424385913
 Window size 100 completed. Final testing accuracy = 0.8305415803492158
 Window size 128 completed. Final testing accuracy = 0.8370058766329851
+Window size 1200 completed. Final testing accuracy = 0.7311207880607111

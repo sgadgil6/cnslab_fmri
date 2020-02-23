@@ -36,7 +36,7 @@ print(train_data.shape)
 ###### start training model
 training_loss = 0.0
 
-for window_size in [50, 64, 75, 100, 128, 256, 1200]:
+for window_size in [1200]:#[50, 64, 75, 100, 128, 256, 1200]:
     W = window_size
     final_testing_accuracy = 0
     testing_acc_curr_fold = []
@@ -58,7 +58,7 @@ for window_size in [50, 64, 75, 100, 128, 256, 1200]:
         
         optimizer = optim.Adam(net.parameters(), lr=LR, weight_decay=0.001)
 
-        for epoch in range(60001):  # number of mini-batches
+        for epoch in range(30001):  # number of mini-batches
             # select a random sub-set of subjects
             idx_batch = np.random.permutation(int(train_data.shape[0]))
             idx_batch = idx_batch[:int(batch_size)]
