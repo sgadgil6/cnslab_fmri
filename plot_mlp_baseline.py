@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 
 train_epoch_list = []
@@ -20,6 +21,11 @@ for line in open('output/mlp_baseline/testing_output.txt'):
     test_epoch_list.append(int(line_split[1]))
     test_loss_list.append(float(line_split[3]))
     test_acc_list.append(float(line_split[5]))
+
+font = {'family' : 'normal',
+        'size'   : 12}
+
+matplotlib.rc('font', **font)
 
 fig, ax = plt.subplots(2,2)
 fig.suptitle('MLP-Baseline Output')

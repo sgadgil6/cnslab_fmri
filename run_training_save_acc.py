@@ -36,7 +36,7 @@ print(train_data.shape)
 ###### start training model
 training_loss = 0.0
 
-for window_size in [1200]:#[50, 64, 75, 100, 128, 256, 1200]:
+for window_size in [256]:#[50, 64, 75, 100, 128, 256, 1200]:
     W = window_size
     final_testing_accuracy = 0
     testing_acc_curr_fold = []
@@ -58,7 +58,7 @@ for window_size in [1200]:#[50, 64, 75, 100, 128, 256, 1200]:
         
         optimizer = optim.Adam(net.parameters(), lr=LR, weight_decay=0.001)
 
-        for epoch in range(30001):  # number of mini-batches
+        for epoch in range(60001):  # number of mini-batches
             # select a random sub-set of subjects
             idx_batch = np.random.permutation(int(train_data.shape[0]))
             idx_batch = idx_batch[:int(batch_size)]
@@ -90,6 +90,12 @@ for window_size in [1200]:#[50, 64, 75, 100, 128, 256, 1200]:
                 train_acc = sum(outputs[:, 0] == train_label_batch) / train_label_batch.shape[0]
                 print('[%d] training loss: %.3f training batch acc %f' % (epoch + 1, training_loss/1000, train_acc))
                 training_loss = 0.0
+                layer_num = 1
+                for edge_importances in net.edge_importance:
+                    edge_imp = torch.squeeze(edge_importances.data).cpu().numpy()
+                    filename = "output/edge_importance/edge_imp_layer_" + str(layer_num) + "_WS_" + str(W) + "_fold_"+str(fold) + "_epoch_" + str(epoch)
+                    np.save(filename, edge_imp)
+                    layer_num += 1
 
             # validate on test subjects by voting
             if epoch % 1000 == 0:  # print every K mini-batches
@@ -130,7 +136,6 @@ for window_size in [1200]:#[50, 64, 75, 100, 128, 256, 1200]:
                 if test_acc > best_test_acc_curr_fold:
                     best_test_acc_curr_fold = test_acc
                 torch.save(net.state_dict(), 'checkpoint.pth')
-                net.train()
         print("Best accuracy for window {} and fold {} = {}".format(W, fold, best_test_acc_curr_fold))
         testing_acc_curr_fold.append(best_test_acc_curr_fold)
     print("Window size {} completed. Final testing accuracy = {}".format(W, np.mean(np.array(testing_acc_curr_fold))))
