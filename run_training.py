@@ -4,7 +4,7 @@ import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from net.st_gcn import Model
+from net.st_gcn_lstm import Model
 import random 
 from scipy import stats
 
@@ -63,6 +63,7 @@ for epoch in range(100001): # number of mini-batches
     # forward + backward + optimize
     optimizer.zero_grad()
     outputs = net(train_data_batch_dev)
+    print(outputs.shape)
     loss = criterion(outputs, train_label_batch_dev)
     loss.backward()
     optimizer.step()
@@ -76,11 +77,11 @@ for epoch in range(100001): # number of mini-batches
         print('[%d] training loss: %.3f training batch acc %f' %(epoch + 1, training_loss/1000, train_acc))
         training_loss = 0.0
         layer_num = 1
-        for edge_importances in net.edge_importance:
-            edge_imp = torch.squeeze(edge_importances.data).cpu().numpy()
-            filename = "output/edge_importance/edge_imp_layer_"+str(layer_num) + "_epoch_" + str(epoch)
-            np.save(filename, edge_imp)
-            layer_num += 1
+        # for edge_importances in net.edge_importance:
+        #     edge_imp = torch.squeeze(edge_importances.data).cpu().numpy()
+        #     filename = "output/edge_importance/edge_imp_layer_"+str(layer_num) + "_epoch_" + str(epoch)
+        #     np.save(filename, edge_imp)
+        #     layer_num += 1
         #print(torch.squeeze(net.edge_importance[0].data).cpu().numpy().shape)
 
     # validate on test subjects by voting
