@@ -7,6 +7,7 @@ from net.utils.tgcn import ConvTemporalGraphical
 from net.fmri_lstm import fMRI_LSTM
 from net.utils.graph import Graph
 import numpy as np
+from scipy import stats
 
 import pdb
 
@@ -64,6 +65,8 @@ class Model(nn.Module):
 
         self.st_gcn = st_gcn(in_channels, 64, kernel_size, 1, residual=False, batch_size=batch_size, **kwargs0)
 
+        self.st_gcn_layer = st_gcn(in_channels, 64, kernel_size, device, 1, residual=False, **kwargs0)
+        self.device = device
         # initialize parameters for edge importance weighting
         if edge_importance_weighting:
             self.edge_importance = nn.Parameter(torch.ones(self.A.size()))
@@ -79,7 +82,7 @@ class Model(nn.Module):
         # fcn for prediction (**number of fully connected layers**)
         self.fcn = nn.Conv2d(64, num_class, kernel_size=1)
         self.sig = nn.Sigmoid()
-
+        
     def forward(self, x):
 
         # data normalization
@@ -91,8 +94,8 @@ class Model(nn.Module):
         x = x.permute(0, 1, 3, 4, 2).contiguous()
         x = x.view(N * M, C, T, V)
 
-        x, _ = self.st_gcn(x, self.A * self.edge_importance)
-        #print(x.shape)
+        x, _ = self.st_gcn_layer(x, self.A * self.edge_importance)
+        
         # forwad
         #for gcn, importance in zip(self.st_gcn_networks, self.edge_importance):
         #    x, _ = gcn(x, self.A * importance)
@@ -164,6 +167,7 @@ class st_gcn(nn.Module):
                  in_channels,
                  out_channels,
                  kernel_size,
+                 device,
                  stride=1,
                  dropout=0.5,
                  residual=True,
@@ -177,6 +181,7 @@ class st_gcn(nn.Module):
         self.gcn = ConvTemporalGraphical(in_channels, out_channels,
                                          kernel_size[1])
         self.lstm_layer = fMRI_LSTM(256, 64, 1, batch_size=batch_size)
+
         self.batch_size = batch_size
         self.tcn = nn.Sequential(
             nn.BatchNorm2d(out_channels),
@@ -191,7 +196,7 @@ class st_gcn(nn.Module):
             nn.BatchNorm2d(out_channels),
             nn.Dropout(dropout, inplace=True),
         )
-
+        self.device = device
         if not residual:
             self.residual = lambda x: 0
 
@@ -215,7 +220,17 @@ class st_gcn(nn.Module):
         res = self.residual(x)
         x, A = self.gcn(x, A)
         x = torch.mean(x, dim=3)
-        x = x.permute([0, 2, 1])
+
+
+        #Tried converting to z-scores
+        #x = x.data.cpu().numpy()
+        #for i in range(x.shape[0]):
+        #    x[i] = stats.zscore(x[i], axis = 1)
+        #x = torch.from_numpy(x).float().to(self.device)
+       
         #x = self.tcn(x) + res
+
+        x = x.permute(0, 2, 1)
+        self.lstm_layer.hidden =self.lstm_layer.init_hidden(batch_size=self.batch_size)
         x = self.lstm_layer(x)
         return x, A
