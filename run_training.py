@@ -18,10 +18,10 @@ TS = 64 # number of voters per test subject
 
 ###### **training parameters**
 LR = 0.001 # learning rate
-batch_size = 64
+batch_size = 16
 
 ###### setup model & data
-net = Model(1,1,None,True)
+net = Model(1,1,None,True, batch_size)
 net.to(device)
 
 criterion = nn.BCELoss() #CrossEntropyLoss()
@@ -101,7 +101,7 @@ for epoch in range(100001): # number of mini-batches
                 
                 # construct random sub-sequences from a batch of test subjects
                 test_data_batch = np.zeros((batch_size,1,W,22,1))
-                for i in range(64):
+                for i in range(batch_size):
                     r1 = random.randint(0, test_data.shape[2]-W)
                     test_data_batch[i]  = test_data[idx_batch[i],:,r1:r1+W,:,:] 
   

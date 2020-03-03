@@ -31,7 +31,7 @@ class Model(nn.Module):
     """
 
     def __init__(self, in_channels, num_class, graph_args,
-                 edge_importance_weighting, **kwargs):
+                 edge_importance_weighting, batch_size, **kwargs):
         super().__init__()
 
         # load graph
@@ -61,27 +61,15 @@ class Model(nn.Module):
         kernel_size = (temporal_kernel_size, spatial_kernel_size)
         self.data_bn = nn.BatchNorm1d(in_channels * A.size(1))
         kwargs0 = {k: v for k, v in kwargs.items() if k != 'dropout'}
-        self.st_gcn_networks = nn.ModuleList((
-            st_gcn(in_channels, 64, kernel_size, 1, residual=False, **kwargs0),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            #st_gcn(64, 128, kernel_size, 2, **kwargs),
-            #st_gcn(128, 128, kernel_size, 1, **kwargs),
-            #st_gcn(128, 128, kernel_size, 1, **kwargs),
-            #st_gcn(128, 256, kernel_size, 2, **kwargs),
-            #st_gcn(256, 256, kernel_size, 1, **kwargs),
-            #st_gcn(256, 256, kernel_size, 1, **kwargs),
-        ))
 
-        self.st_gcn = st_gcn(in_channels, 64, kernel_size, 1, residual=False, **kwargs0)
+        self.st_gcn = st_gcn(in_channels, 64, kernel_size, 1, residual=False, batch_size=batch_size, **kwargs0)
 
         # initialize parameters for edge importance weighting
         if edge_importance_weighting:
             self.edge_importance = nn.Parameter(torch.ones(self.A.size()))
             """
             self.edge_importance = nn.ParameterList([
-                nn.Parameter(torch.ones(self.A.size()))
+                nn.Parameter(torch.ones(self.A.size()
                 for i in self.st_gcn_networks
             ])
             """

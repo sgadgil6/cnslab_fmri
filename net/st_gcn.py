@@ -62,9 +62,9 @@ class Model(nn.Module):
         kwargs0 = {k: v for k, v in kwargs.items() if k != 'dropout'}
         self.st_gcn_networks = nn.ModuleList((
             st_gcn(in_channels, 64, kernel_size, 1, residual=False, **kwargs0),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
-            st_gcn(64, 64, kernel_size, 1, **kwargs),
+            st_gcn(64, 64, kernel_size, 1, residual=False, **kwargs),
+            st_gcn(64, 64, kernel_size, 1, residual=False, **kwargs),
+            st_gcn(64, 64, kernel_size, 1, residual=False, **kwargs),
             #st_gcn(64, 128, kernel_size, 2, **kwargs),
             #st_gcn(128, 128, kernel_size, 1, **kwargs),
             #st_gcn(128, 128, kernel_size, 1, **kwargs),
@@ -75,10 +75,11 @@ class Model(nn.Module):
 
         # initialize parameters for edge importance weighting
         if edge_importance_weighting:
-            self.edge_importance = nn.ParameterList([
-                nn.Parameter(torch.ones(self.A.size()))
-                for i in self.st_gcn_networks
-            ])
+            # self.edge_importance = nn.ParameterList([
+            #     nn.Parameter(torch.ones(self.A.size()))
+            #     for i in self.st_gcn_networks
+            # ])
+            self.edge_importance = nn.Parameter(torch.ones(self.A.size()))
         else:
             self.edge_importance = [1] * len(self.st_gcn_networks)
 
@@ -98,8 +99,10 @@ class Model(nn.Module):
         x = x.view(N * M, C, T, V)
 
         # forwad
-        for gcn, importance in zip(self.st_gcn_networks, self.edge_importance):
-            x, _ = gcn(x, self.A * importance)
+        # for gcn, importance in zip(self.st_gcn_networks, self.edge_importance):
+        #     x, _ = gcn(x, self.A * (importance + torch.transpose(importance,1,2)))
+        for gcn in self.st_gcn_networks:
+            x, _ = gcn(x, self.A * (self.edge_importance*self.edge_importance+torch.transpose(self.edge_importance*self.edge_importance,1,2)))
 
         # global pooling
         x = F.avg_pool2d(x, x.size()[2:])
