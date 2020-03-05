@@ -80,7 +80,7 @@ for trial in range(10):
         if epoch == 20000 or epoch == 40000 or epoch == 60000:
             
             for importance in net.edge_importance:
-                edge_importances = importance*importance+torch.transpose(importance*importance,1,2)
+                edge_importances = importance*importance+torch.transpose(importance*importance,0,1)
                 edge_imp = torch.squeeze(edge_importances.data).cpu().numpy()
                 filename = "output/edge_importance/edge_imp_all_data_epoch_" + str(epoch) + "_trial_" + str(trial)
                 np.save(filename, edge_imp)
