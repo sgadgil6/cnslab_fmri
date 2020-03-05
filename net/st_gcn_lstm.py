@@ -32,7 +32,7 @@ class Model(nn.Module):
     """
 
     def __init__(self, in_channels, num_class, graph_args,
-                 edge_importance_weighting, batch_size, **kwargs):
+                 edge_importance_weighting, device, **kwargs):
         super().__init__()
 
         # load graph
@@ -58,12 +58,10 @@ class Model(nn.Module):
 
         # build networks (**number of layers, final output features, kernel size**)
         spatial_kernel_size = A.size(0)
-        temporal_kernel_size = 11 # update temporal kernel size
+        temporal_kernel_size = 1 # update temporal kernel size
         kernel_size = (temporal_kernel_size, spatial_kernel_size)
         self.data_bn = nn.BatchNorm1d(in_channels * A.size(1))
         kwargs0 = {k: v for k, v in kwargs.items() if k != 'dropout'}
-
-        self.st_gcn = st_gcn(in_channels, 64, kernel_size, 1, residual=False, batch_size=batch_size, **kwargs0)
 
         self.st_gcn_layer = st_gcn(in_channels, 64, kernel_size, device, 1, residual=False, **kwargs0)
         self.device = device
@@ -72,7 +70,7 @@ class Model(nn.Module):
             self.edge_importance = nn.Parameter(torch.ones(self.A.size()))
             """
             self.edge_importance = nn.ParameterList([
-                nn.Parameter(torch.ones(self.A.size()
+                nn.Parameter(torch.ones(self.A.size()))
                 for i in self.st_gcn_networks
             ])
             """
@@ -180,7 +178,7 @@ class st_gcn(nn.Module):
 
         self.gcn = ConvTemporalGraphical(in_channels, out_channels,
                                          kernel_size[1])
-        self.lstm_layer = fMRI_LSTM(256, 64, 1, batch_size=batch_size)
+        self.lstm_layer = fMRI_LSTM(64, 64, 1, batch_size=batch_size)
 
         self.batch_size = batch_size
         self.tcn = nn.Sequential(
@@ -220,17 +218,18 @@ class st_gcn(nn.Module):
         res = self.residual(x)
         x, A = self.gcn(x, A)
         x = torch.mean(x, dim=3)
-
-
+        x = x + res
+        #print(res)
         #Tried converting to z-scores
-        #x = x.data.cpu().numpy()
-        #for i in range(x.shape[0]):
-        #    x[i] = stats.zscore(x[i], axis = 1)
-        #x = torch.from_numpy(x).float().to(self.device)
+        # x = x.data.cpu().numpy()
+        # for i in range(x.shape[0]):
+        #     x[i] = stats.zscore(x[i], axis = 1)
+        # x = torch.from_numpy(x).float().to(self.device)
        
         #x = self.tcn(x) + res
-
+        #x = x + res
         x = x.permute(0, 2, 1)
         self.lstm_layer.hidden =self.lstm_layer.init_hidden(batch_size=self.batch_size)
-        x = self.lstm_layer(x)
+        x = self.lstm_layer(x) 
+        print(x)
         return x, A

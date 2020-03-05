@@ -40,7 +40,6 @@ class Model(nn.Module):
 
         # **this is the adj matrix that computes correlation based on z-score of data for all 1200 timesteps**
         A = np.load('data/adj_matrix_qingyu.npy')
-
         Dl = np.sum(A, 0)
         num_node = A.shape[0]
         Dn = np.zeros((num_node, num_node))
@@ -101,6 +100,7 @@ class Model(nn.Module):
         # forwad
         # for gcn, importance in zip(self.st_gcn_networks, self.edge_importance):
         #     x, _ = gcn(x, self.A * (importance + torch.transpose(importance,1,2)))
+        #print(self.edge_importance.shape)
         for gcn in self.st_gcn_networks:
             x, _ = gcn(x, self.A * (self.edge_importance*self.edge_importance+torch.transpose(self.edge_importance*self.edge_importance,1,2)))
 
