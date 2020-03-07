@@ -71,19 +71,7 @@ class Model(nn.Module):
             """
             self.edge_importance = nn.ParameterList([
                 nn.Parameter(torch.ones(self.A.size()))
-                for i in self.st_gcn_networks
-            ])
-            """
-        else:
-            self.edge_importance = [1] * len(self.st_gcn_networks)
-
-        # fcn for prediction (**number of fully connected layers**)
-        self.fcn = nn.Conv2d(64, num_class, kernel_size=1)
-        self.sig = nn.Sigmoid()
-        
-    def forward(self, x):
-
-        # data normalization
+                for i in self.st_gcn_networksddq
         N, C, T, V, M = x.size()
         x = x.permute(0, 4, 3, 1, 2).contiguous()
         x = x.view(N * M, V * C, T)

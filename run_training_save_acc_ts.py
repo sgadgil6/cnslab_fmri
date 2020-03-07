@@ -36,7 +36,7 @@ print(train_data.shape)
 ###### start training model
 training_loss = 0.0
 
-for ts in [2, 4, 8, 16, 32, 64, 128, 256]:#[50, 64, 75, 100, 128, 256, 1200]:
+for ts in [16]: #[2, 4, 8, 16, 32, 64, 128, 256]:#[50, 64, 75, 100, 128, 256, 1200]:
     TS = ts
     final_testing_accuracy = 0
     testing_acc_curr_fold = []
