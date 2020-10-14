@@ -7,7 +7,9 @@ The previous version of this module implementation for f-MRI scans can be found 
 
 **DATA USAGE**
 
-For HCP, the the data "Resting State fMRI 1 Preprocessed" was downloaded from https://db.humanconnectome.org/. The GIFTI images were then parcellated using https://balsa.wustl.edu/QnXj
-Here are the final processed BOLD signal files: https://drive.google.com/file/d/1c4UYvp089KwqAllAHdHMHGjq8y5x882D/view.
+For HCP, the the data "Resting State fMRI 1 Preprocessed" was downloaded fromÂ https://db.humanconnectome.org/. The GIFTI images were then parcellated usingÂ https://balsa.wustl.edu/QnXj
+
+Here are the final processed BOLD signal files:Â https://drive.google.com/file/d/1c4UYvp089KwqAllAHdHMHGjq8y5x882D/view.
+
 If you need the NCANDA data, you should directly contact last author Dr. Kilian Pohl (kilian.pohl@stanford.edu) for data usage.
 
