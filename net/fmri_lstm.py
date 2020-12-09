@@ -13,7 +13,7 @@ class fMRI_LSTM(nn.Module):
         self.hidden_dim = hidden_dim
         self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True)
         self.linear = nn.Linear(hidden_dim, 1)
-        self.hidden = self.init_hidden(batch_size=batch_size)
+        self.hidden_init = self.init_hidden(batch_size=batch_size)
         self.dropout = nn.Dropout(p=0.5)
         self.target_size = target_size
 
@@ -22,7 +22,8 @@ class fMRI_LSTM(nn.Module):
 
     def forward(self, x):
         #x = x.T
-        lstm_out, self.hidden = self.lstm(x, self.hidden)
+        lstm_out, _ = self.lstm(x) # You don't really need to pass hidden layer state
+        # lstm_out, _ = self.lstm(x,self.hidden_init) # or for init hidden state.
         lstm_out = lstm_out.squeeze()[:, -1, :]
         out = self.dropout(lstm_out)
         linear_output = self.linear(out)
