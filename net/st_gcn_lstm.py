@@ -11,6 +11,7 @@ from scipy import stats
 
 import pdb
 
+
 class Model(nn.Module):
     r"""Spatial temporal graph convolutional networks.
 
@@ -38,7 +39,7 @@ class Model(nn.Module):
         # load graph
 
         # **this is the adj matrix Soham produced that computes correlation based on raw data **
-        #A = np.load('../cs230/adj/adj_matrix.npy')
+        # A = np.load('../cs230/adj/adj_matrix.npy')
 
         # **this is the adj matrix that computes correlation based on z-score of data for all 1200 timesteps**
         A = np.load('data/adj_matrix_qingyu.npy')
@@ -58,7 +59,7 @@ class Model(nn.Module):
 
         # build networks (**number of layers, final output features, kernel size**)
         spatial_kernel_size = A.size(0)
-        temporal_kernel_size = 1 # update temporal kernel size
+        temporal_kernel_size = 1  # update temporal kernel size
         kernel_size = (temporal_kernel_size, spatial_kernel_size)
         self.data_bn = nn.BatchNorm1d(in_channels * A.size(1))
         kwargs0 = {k: v for k, v in kwargs.items() if k != 'dropout'}
@@ -71,7 +72,19 @@ class Model(nn.Module):
             """
             self.edge_importance = nn.ParameterList([
                 nn.Parameter(torch.ones(self.A.size()))
-                for i in self.st_gcn_networksddq
+                for i in self.st_gcn_networks
+            ])
+            """
+        else:
+            self.edge_importance = [1] * len(self.st_gcn_networks)
+
+        # fcn for prediction (**number of fully connected layers**)
+        self.fcn = nn.Conv2d(64, num_class, kernel_size=1)
+        self.sig = nn.Sigmoid()
+
+    def forward(self, x):
+
+        # data normalization
         N, C, T, V, M = x.size()
         x = x.permute(0, 4, 3, 1, 2).contiguous()
         x = x.view(N * M, V * C, T)
@@ -81,9 +94,9 @@ class Model(nn.Module):
         x = x.view(N * M, C, T, V)
 
         x, _ = self.st_gcn_layer(x, self.A * self.edge_importance)
-        
+
         # forwad
-        #for gcn, importance in zip(self.st_gcn_networks, self.edge_importance):
+        # for gcn, importance in zip(self.st_gcn_networks, self.edge_importance):
         #    x, _ = gcn(x, self.A * importance)
         """
         # global pooling
@@ -123,6 +136,7 @@ class Model(nn.Module):
         output = x.view(N, M, -1, t, v).permute(0, 2, 3, 4, 1)
         # pdb.set_trace()
         return output, feature
+
 
 class st_gcn(nn.Module):
     r"""Applies a spatial temporal graph convolution over an input graph sequence.
@@ -207,17 +221,17 @@ class st_gcn(nn.Module):
         x, A = self.gcn(x, A)
         x = torch.mean(x, dim=3)
         x = x + res
-        #print(res)
-        #Tried converting to z-scores
+        # print(res)
+        # Tried converting to z-scores
         # x = x.data.cpu().numpy()
         # for i in range(x.shape[0]):
         #     x[i] = stats.zscore(x[i], axis = 1)
         # x = torch.from_numpy(x).float().to(self.device)
-       
-        #x = self.tcn(x) + res
-        #x = x + res
+
+        # x = self.tcn(x) + res
+        # x = x + res
         x = x.permute(0, 2, 1)
-        self.lstm_layer.hidden =self.lstm_layer.init_hidden(batch_size=self.batch_size)
-        x = self.lstm_layer(x) 
+        self.lstm_layer.hidden = self.lstm_layer.init_hidden(batch_size=self.batch_size)
+        x = self.lstm_layer(x)
         print(x)
         return x, A
